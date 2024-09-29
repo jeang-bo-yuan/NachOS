@@ -12,6 +12,7 @@
 #include "copyright.h"
 #include "list.h"
 #include "thread.h"
+#include <list>
 
 // The following class defines the scheduler/dispatcher abstraction -- 
 // the data structures and operations needed to keep track of which 
@@ -21,6 +22,28 @@ enum SchedulerType {
         RR,     // Round Robin
         SJF,
         Priority
+};
+
+class sleepFunc {
+public:
+	sleepFunc():currentINT(0) {}
+	/// 讓 t 休息 x 毫秒
+	void napTime(Thread* t, int x);
+	/// 讓時間前進，並檢查有沒有要喚醒的thread。如果成功喚醒，則回傳true
+	bool wakeUp();
+	/// 如果沒有在休息的thread，則回傳true
+	bool isEmpty() { return T_list.empty(); }
+private:
+	/// 記錄休息中的thread
+	class sleep_T {
+	public:
+		sleep_T(Thread* t, int x): sleepThread(t), when(x){}
+		Thread* sleepThread; ///< 哪個thread
+		int when; ///< 何時被喚醒
+	};
+
+	int currentINT; ///< 目前時間
+	std::list<sleep_T> T_list; ///< 所有休息中的thread
 };
 
 class Scheduler {

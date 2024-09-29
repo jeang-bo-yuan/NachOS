@@ -23,6 +23,35 @@
 #include "scheduler.h"
 #include "main.h"
 
+// make t sleep
+void sleepFunc::napTime(Thread* t, int x) {
+    ASSERT(kernel->interrupt->getLevel() == IntOff);
+    T_list.emplace_back(t, x);
+    t->Sleep(false);
+}
+
+// wake up the thread
+bool sleepFunc::wakeUp() {
+    bool woken = false;
+    ++currentINT;
+
+    // iterate over all sleeping thread
+    for (auto it = T_list.begin(); it != T_list.end();) {
+        if (currentINT >= it->when) {
+            // wake up the thread
+            woken = true;
+            std::cout << "sleepFunc::wakeUp Thread woken" << std::endl;
+            kernel->scheduler->ReadyToRun(it->sleepThread);
+            // delete from list
+            it = T_list.erase(it);
+        }
+        else
+            ++it;
+    }
+
+    return woken;
+}
+
 //----------------------------------------------------------------------
 // Scheduler::Scheduler
 // 	Initialize the list of ready but not running threads.

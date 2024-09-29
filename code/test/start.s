@@ -138,6 +138,16 @@ PrintInt:
 	j       $31
 	.end    PrintInt
 
+	.globl Sleep
+	.ent   Sleep
+Sleep:
+	// put system call number into r2
+	addiu  $2, $0, SC_Sleep
+	syscall
+	// r31 = return address register
+	j      $31
+	.end   Sleep 
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
