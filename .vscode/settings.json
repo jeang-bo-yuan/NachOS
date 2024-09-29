@@ -1,0 +1,14 @@
+{
+    "makefile.makefilePath": "./code/Makefile",
+    "makefile.makeDirectory": "./code",
+    "C_Cpp.default.defines": [
+        "THREADS",
+        "USER_PROGRAM",
+        "FILESYS_NEEDED",
+        "FILESYS_STUB",
+        "CHANGED",
+        "x86",
+        "LINUX",
+        "BSD"
+    ]
+}
