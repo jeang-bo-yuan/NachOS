@@ -52,7 +52,7 @@ void
 ExceptionHandler(ExceptionType which)
 {
 	int	type = kernel->machine->ReadRegister(2);
-	int	val;
+	int	val, val2;
 
     switch (which) {
 	case SyscallException:
@@ -84,6 +84,50 @@ ExceptionHandler(ExceptionType which)
 			std::cout << "Sleep Time: " << val << "(ms)" << std::endl;
 			kernel->alarm->WaitUntil(val);
 			return;
+
+		case SC_Add:
+			val = kernel->machine->ReadRegister(4);
+			val2 = kernel->machine->ReadRegister(5);
+			// write result into r2
+			kernel->machine->WriteRegister(2, val + val2);
+			return;
+
+		case SC_Sub:
+			val = kernel->machine->ReadRegister(4);
+			val2 = kernel->machine->ReadRegister(5);
+			kernel->machine->WriteRegister(2, val - val2);
+			return;
+
+		case SC_Mul:
+			val = kernel->machine->ReadRegister(4);
+			val2 = kernel->machine->ReadRegister(5);
+			kernel->machine->WriteRegister(2, val * val2);
+			return;
+
+		case SC_Div:
+			val = kernel->machine->ReadRegister(4);
+			val2 = kernel->machine->ReadRegister(5);
+			if (val2 == 0) {
+				cout << "Error: Divide by zero" << endl;
+				kernel->machine->WriteRegister(2, 11132021);
+			}
+			else {
+				kernel->machine->WriteRegister(2, val / val2);
+			}
+			return;
+
+		case SC_Mod:
+			val = kernel->machine->ReadRegister(4);
+			val2 = kernel->machine->ReadRegister(5);
+			if (val2 == 0) {
+				cout << "Error: Modded by zero" << endl;
+				kernel->machine->WriteRegister(2, 11132021);
+			}
+			else {
+				kernel->machine->WriteRegister(2, val % val2);
+			}
+			return;
+
 		default:
 		    cerr << "Unexpected system call " << type << "\n";
  		    break;
