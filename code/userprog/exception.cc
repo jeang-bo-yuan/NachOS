@@ -128,6 +128,32 @@ ExceptionHandler(ExceptionType which)
 			}
 			return;
 
+		case SC_Print: {
+			const int landmine = (21 % 26) + 'a';
+			// ptr = pointer of the string
+			int ptr = kernel->machine->ReadRegister(4);
+			int len = 0;
+
+			// read 1 byte into val, then move ptr forward
+			kernel->machine->ReadMem(ptr++, 1, &val);
+
+			cout << "[B11132021_Print]";
+			while (val != '\0') {
+				++len;
+
+				if (tolower(val) == landmine)
+					cout.put('*');
+				else
+					cout.put(val);
+
+				kernel->machine->ReadMem(ptr++, 1, &val);
+			}
+
+			// write back result
+			kernel->machine->WriteRegister(2, len);
+			return;
+		}
+
 		default:
 		    cerr << "Unexpected system call " << type << "\n";
  		    break;
