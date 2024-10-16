@@ -22,3 +22,13 @@ coff2noff
 
 # VSCode related
 .vscode
+
+# test program
+code/test/calc
+code/test/halt
+code/test/matmult
+code/test/printstr
+code/test/shell
+code/test/sleep
+code/test/sort
+code/test/test1
