@@ -79,7 +79,10 @@ Scheduler::Scheduler(SchedulerType type)
         	readyList = new List<Thread *>;
         	break;
     	case SJF:
-		    /* todo */
+		    readyList = new SortedList<Thread*>([](Thread* a, Thread* b) {
+                return a->getBurstTime() == b->getBurstTime() ? 0  :     // return 0, if equal
+                       a->getBurstTime() <  b->getBurstTime() ? -1 : 1;  // return -1, if a < b; else return 1
+            });
         	break;
     	case Priority:
 		    readyList = new SortedList<Thread *>(PriorityCompare);

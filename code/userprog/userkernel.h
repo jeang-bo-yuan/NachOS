@@ -42,6 +42,7 @@ class UserProgKernel : public ThreadedKernel {
 	Thread* t[10];
 	char*	execfile[10];
   int _priority[10] = { 0 }; // priority for each program
+  int _burst[10] = { 0 };    // burst time for each program
 	int	execfileNum;
 };
 
