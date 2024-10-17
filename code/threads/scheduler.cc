@@ -85,7 +85,7 @@ Scheduler::Scheduler(SchedulerType type)
 		    readyList = new SortedList<Thread *>(PriorityCompare);
         	break;
     	case FIFO:
-            /* todo */
+            readyList = new List<Thread *>;
             break;
    	}
 	toBeDestroyed = NULL;
