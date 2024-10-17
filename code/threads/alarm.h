@@ -30,7 +30,7 @@ class Alarm : public CallBackObj {
 				// to "toCall" every time slice.
     ~Alarm() { delete timer; }
     
-    void WaitUntil(int x);	// suspend execution until time > now + x
+    void WaitUntil(int x);	// suspend execution until time > now + x * TimerTicks
 
   private:
     Timer *timer;		// the hardware timer device

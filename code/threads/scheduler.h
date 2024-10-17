@@ -27,10 +27,10 @@ enum SchedulerType {
 
 class sleepFunc {
 public:
-	sleepFunc():currentINT(0) {}
-	/// 讓 t 休息 x 毫秒
+	sleepFunc() {}
+	/// 讓 t 休息 直到 Alarm 打斷 x 次
 	void napTime(Thread* t, int x);
-	/// 讓時間前進，並檢查有沒有要喚醒的thread。如果成功喚醒，則回傳true
+	/// 檢查有沒有要喚醒的thread。如果成功喚醒，則回傳true
 	bool wakeUp();
 	/// 如果沒有在休息的thread，則回傳true
 	bool isEmpty() { return T_list.empty(); }
@@ -43,7 +43,6 @@ private:
 		int when; ///< 何時被喚醒
 	};
 
-	int currentINT; ///< 目前時間
 	std::list<sleep_T> T_list; ///< 所有休息中的thread
 };
 

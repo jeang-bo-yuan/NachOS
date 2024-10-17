@@ -23,24 +23,23 @@
 #include "scheduler.h"
 #include "main.h"
 
-// make t sleep
+// make t sleep, until Alarm interrupt x times
 void sleepFunc::napTime(Thread* t, int x) {
     ASSERT(kernel->interrupt->getLevel() == IntOff);
-    T_list.emplace_back(t, x);
+    T_list.emplace_back(t, kernel->stats->totalTicks + x * TimerTicks);
     t->Sleep(false);
 }
 
 // wake up the thread
 bool sleepFunc::wakeUp() {
     bool woken = false;
-    ++currentINT;
 
     // iterate over all sleeping thread
     for (auto it = T_list.begin(); it != T_list.end();) {
-        if (currentINT >= it->when) {
+        if (kernel->stats->totalTicks >= it->when) {
             // wake up the thread
             woken = true;
-            std::cout << "sleepFunc::wakeUp Thread woken" << std::endl;
+            std::cout << "sleepFunc::wakeUp " << it->sleepThread->getName() << " woken" << std::endl;
             kernel->scheduler->ReadyToRun(it->sleepThread);
             // delete from list
             it = T_list.erase(it);
