@@ -43,3 +43,6 @@ Statistics::Print()
     cout << "Network I/O: packets received " << numPacketsRecvd;
 		cout << ", sent " << numPacketsSent << "\n";
 }
+
+// global variable
+int TimerTicks = 100;

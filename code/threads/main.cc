@@ -61,14 +61,21 @@ main(int argc, char **argv)
     // before anything else, initialize the debugging system
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-d") == 0) {
-	    ASSERT(i + 1 < argc);   // next argument is debug string
+	        ASSERT(i + 1 < argc);   // next argument is debug string
             debugArg = argv[i + 1];
-	    i++;
-	} else if (strcmp(argv[i], "-u") == 0) {
+	        i++;
+        } 
+        else if (strcmp(argv[i], "-u") == 0) {
             cout << "Partial usage: nachos [-z -d debugFlags]\n";
-	} else if (strcmp(argv[i], "-z") == 0) {
+        } 
+        else if (strcmp(argv[i], "-z") == 0) {
             cout << copyright;
-	}
+        }
+        else if (strcmp(argv[i], "-timertick") == 0) {
+            ASSERT(i + 1 < argc);
+            TimerTicks = atoi(argv[i + 1]);
+            i++;
+        }
     }
     debug = new Debug(debugArg);
     

@@ -35,7 +35,9 @@ ThreadedKernel::ThreadedKernel(int argc, char **argv)
 	    randomSlice = TRUE;
 	    i++;
         } else if (strcmp(argv[i], "-u") == 0) {
+            cout << "===========The following argument is defined in kernel.cc" << endl;
             cout << "Partial usage: nachos [-rs randomSeed]\n";
+            cout << "Partial usage: nachos [-sche RR|FCFS|PRIORITY|SJF]\n";
 	    } else if(strcmp(argv[i], "-sche") == 0) {
             if (!(i + 1 < argc)){
                 cout << "Partial usage: nachos [-sche Schedluer Type]\n";
