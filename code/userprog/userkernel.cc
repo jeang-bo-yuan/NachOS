@@ -22,6 +22,8 @@ UserProgKernel::UserProgKernel(int argc, char **argv)
 {
     debugUserProg = FALSE;
 	execfileNum=0;
+	int prioNum = 0; // how many `-prio` has been parsed
+
     for (int i = 1; i < argc; i++) {
 			if (strcmp(argv[i], "-s") == 0) {
 			debugUserProg = TRUE;
@@ -29,11 +31,14 @@ UserProgKernel::UserProgKernel(int argc, char **argv)
 		else if (strcmp(argv[i], "-e") == 0) {
 			execfile[++execfileNum]= argv[i + 1];
 		}
-			else if (strcmp(argv[i], "-u") == 0) {
+		else if (strcmp(argv[i], "-prio") == 0) {
+			_priority[++prioNum] = atoi(argv[i + 1]);
+		}
+		else if (strcmp(argv[i], "-u") == 0) {
 			cout << "===========The following argument is defined in userkernel.cc" << endl;
 			cout << "Partial usage: nachos [-s]\n";
 			cout << "Partial usage: nachos [-u]" << endl;
-			cout << "Partial usage: nachos [-e] filename" << endl;
+			cout << "Partial usage: nachos [-e] filename [-prio] priority" << endl;
 		}
 		else if (strcmp(argv[i], "-h") == 0) {
 			cout << "argument 's' is for debugging. Machine status  will be printed " << endl;
@@ -93,13 +98,17 @@ UserProgKernel::Run()
 {
 
 	cout << "Total threads number is " << execfileNum << endl;
-	for (int n=1;n<=execfileNum;n++)
-		{
+	for (int n = 1 ; n <= execfileNum ; n++)
+	{
 		t[n] = new Thread(execfile[n]);
 		t[n]->space = new AddrSpace();
+		t[n]->setPriority(_priority[n]);
+
+		// Fork and put into readyList
 		t[n]->Fork((VoidFunctionPtr) &ForkExecute, (void *)t[n]);
+		
 		cout << "Thread " << execfile[n] << " is executing." << endl;
-		}
+	}
 //	Thread *t1 = new Thread(execfile[1]);
 //	Thread *t1 = new Thread("../test/test1");
 //	Thread *t2 = new Thread("../test/test2");
