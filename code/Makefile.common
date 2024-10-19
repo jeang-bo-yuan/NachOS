@@ -72,6 +72,7 @@ THREAD_H = ../lib/bitmap.h\
 	../threads/synch.h\
 	../threads/synchlist.h\
 	../threads/thread.h\
+	../threads/threadArrive.h\
 	../machine/elevator.h\
 	../machine/elevatortest.h
 
@@ -91,13 +92,14 @@ THREAD_C = ../lib/bitmap.cc\
 	../threads/synch.cc\
 	../threads/synchlist.cc\
 	../threads/thread.cc\
+	../threads/threadArrive.cc\
 	../machine/elevatortest.cc\
 	../machine/elevator.cc
 
 THREAD_S = ../threads/switch.s
 
 THREAD_O = bitmap.o debug.o libtest.o sysdep.o interrupt.o stats.o timer.o \
-	alarm.o kernel.o main.o scheduler.o synch.o thread.o elevator.o \
+	alarm.o kernel.o main.o scheduler.o synch.o thread.o threadArrive.o elevator.o \
 	elevatortest.o
 
 USERPROG_H = ../userprog/addrspace.h\

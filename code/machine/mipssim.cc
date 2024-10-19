@@ -60,9 +60,11 @@ Machine::Run()
     kernel->interrupt->setStatus(UserMode);
     for (;;) {
         OneInstruction(instr);
-	kernel->interrupt->OneTick();
-	if (singleStep && (runUntilTime <= kernel->stats->totalTicks))
-	  Debugger();
+		// execute one instruction -> reduce one burst
+		kernel->currentThread->setBurstTime(kernel->currentThread->getBurstTime() - 1);
+		kernel->interrupt->OneTick();
+		if (singleStep && (runUntilTime <= kernel->stats->totalTicks))
+			Debugger();
     }
 }
 

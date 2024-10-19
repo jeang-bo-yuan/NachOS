@@ -21,6 +21,7 @@
 #include "switch.h"
 #include "synch.h"
 #include "sysdep.h"
+#include "threadArrive.h"
 
 // this is put at the top of the execution stack, for detecting stack overflows
 const int STACK_FENCEPOST = 0xdedbeef;
@@ -436,13 +437,18 @@ Thread::SelfTest()
     char *name[number] 	 = {"A", "B", "C"};
     int burst[number] 	 = {3, 10, 4};
     int priority[number] = {4, 5, 3};
+    int arrive[number] = { 3, 0, 5 };
 
     Thread *t;
     for (int i = 0; i < number; i ++) {
         t = new Thread(name[i]);
         t->setPriority(priority[i]);
         t->setBurstTime(burst[i]);
-        t->Fork((VoidFunctionPtr) SimpleThread, (void *)NULL);
+
+        if (kernel->scheduler->getSchedulerType() == SRTF)
+            ThreadArrive::makeThreadArrive(t, arrive[i], (VoidFunctionPtr) SimpleThread, (void *)NULL);
+        else
+            t->Fork((VoidFunctionPtr) SimpleThread, (void *)NULL);
     }
     kernel->currentThread->Yield();
 }

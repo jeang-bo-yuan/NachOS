@@ -22,7 +22,8 @@ enum SchedulerType {
         RR,     // Round Robin
         SJF,
         Priority,
-		FIFO
+		FIFO,
+		SRTF,  // Shortest Remain Time First
 };
 
 class sleepFunc {

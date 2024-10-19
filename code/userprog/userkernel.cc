@@ -10,6 +10,7 @@
 #include "synchconsole.h"
 #include "userkernel.h"
 #include "synchdisk.h"
+#include "threadArrive.h"
 
 //----------------------------------------------------------------------
 // UserProgKernel::UserProgKernel
@@ -24,6 +25,7 @@ UserProgKernel::UserProgKernel(int argc, char **argv)
 	execfileNum=0;
 	int prioNum = 0; // how many `-prio` has been parsed
 	int burstNum = 0; // how many `-burst` has been parsed
+	int arrivNum = 0; // how many `-arriv` has been parsed
 
     for (int i = 1; i < argc; i++) {
 			if (strcmp(argv[i], "-s") == 0) {
@@ -38,11 +40,15 @@ UserProgKernel::UserProgKernel(int argc, char **argv)
 		else if (strcmp(argv[i], "-burst") == 0) {
 			_burst[++burstNum] = atoi(argv[i + 1]);
 		}
+		else if (strcmp(argv[i], "-arriv") == 0) {
+			_arrive[++arrivNum] = atoi(argv[i + 1]);
+		}
 		else if (strcmp(argv[i], "-u") == 0) {
 			cout << "===========The following argument is defined in userkernel.cc" << endl;
 			cout << "Partial usage: nachos [-s]\n";
 			cout << "Partial usage: nachos [-u]" << endl;
-			cout << "Partial usage: nachos [-e] filename [-prio] priority [-burst] burstTime" << endl;
+			cout << "Partial usage: nachos [-e] filename [-prio] priority [-burst] burstTime [-arriv] arriveTime" << endl;
+			cout << "\tNote: -arriv only take effects when -sche SRTF is given" << endl;
 		}
 		else if (strcmp(argv[i], "-h") == 0) {
 			cout << "argument 's' is for debugging. Machine status  will be printed " << endl;
@@ -87,16 +93,18 @@ UserProgKernel::~UserProgKernel()
 #endif
 }
 
-//----------------------------------------------------------------------
-// UserProgKernel::Run
-// 	Run the Nachos kernel.  For now, just run the "halt" program. 
-//----------------------------------------------------------------------
+
+// Execute the program thread
 void
 ForkExecute(Thread *t)
 {
 	t->space->Execute(t->getName());
 }
 
+//----------------------------------------------------------------------
+// UserProgKernel::Run
+// 	Run the Nachos kernel.  For now, just run the "halt" program. 
+//----------------------------------------------------------------------
 void
 UserProgKernel::Run()
 {
@@ -107,12 +115,18 @@ UserProgKernel::Run()
 		t[n] = new Thread(execfile[n]);
 		t[n]->space = new AddrSpace();
 		t[n]->setPriority(_priority[n]);
-		t[n]->setBurstTime(_burst[n]);
+		t[n]->setBurstTime(_burst[n] * TimerTicks);
 
-		// Fork and put into readyList
-		t[n]->Fork((VoidFunctionPtr) &ForkExecute, (void *)t[n]);
-		
-		cout << "Thread " << execfile[n] << " is executing." << endl;
+		// In SRTF, simulate the arrival of thread
+		if (scheduler->getSchedulerType() == SRTF) {
+			ThreadArrive::makeThreadArrive(t[n], _arrive[n], (VoidFunctionPtr) &ForkExecute, (void *)t[n]);
+		}
+		else {
+			// Fork and put into readyList
+			t[n]->Fork((VoidFunctionPtr) &ForkExecute, (void *)t[n]);
+
+			cout << "Thread " << execfile[n] << " is executing." << endl;
+		}
 	}
 //	Thread *t1 = new Thread(execfile[1]);
 //	Thread *t1 = new Thread("../test/test1");

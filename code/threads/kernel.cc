@@ -37,7 +37,7 @@ ThreadedKernel::ThreadedKernel(int argc, char **argv)
         } else if (strcmp(argv[i], "-u") == 0) {
             cout << "===========The following argument is defined in kernel.cc" << endl;
             cout << "Partial usage: nachos [-rs randomSeed]\n";
-            cout << "Partial usage: nachos [-sche RR|FCFS|PRIORITY|SJF]\n";
+            cout << "Partial usage: nachos [-sche RR|FCFS|PRIORITY|SJF|SRTF]\n";
 	    } else if(strcmp(argv[i], "-sche") == 0) {
             if (!(i + 1 < argc)){
                 cout << "Partial usage: nachos [-sche Schedluer Type]\n";
@@ -49,6 +49,8 @@ ThreadedKernel::ThreadedKernel(int argc, char **argv)
                 type = Priority;
             } else if (strcmp(argv[i + 1], "SJF") == 0) {
                 type = SJF;
+            } else if (strcmp(argv[i + 1], "SRTF") == 0) {
+                type = SRTF;
             }
         }
     }
@@ -126,6 +128,7 @@ ThreadedKernel::SelfTest() {
    
    currentThread->SelfTest();	// test thread switching
    
+   /*
    				// test semaphore operation
    semaphore = new Semaphore("test", 0);
    semaphore->SelfTest();
@@ -138,4 +141,5 @@ ThreadedKernel::SelfTest() {
    delete synchList;
 
    ElevatorSelfTest();
+   */
 }

@@ -39,11 +39,12 @@ class UserProgKernel : public ThreadedKernel {
 
   private:
     bool debugUserProg;		// single step user program
-	Thread* t[10];
-	char*	execfile[10];
-  int _priority[10] = { 0 }; // priority for each program
-  int _burst[10] = { 0 };    // burst time for each program
-	int	execfileNum;
+    Thread* t[10];
+    char*	execfile[10];
+    int _priority[10] = { 0 }; // priority for each program (-prio)
+    int _burst[10] = { 0 };    // burst time for each program (-burst)
+    int _arrive[10] = { 0 };   // arrive time for each program (-arriv)
+    int	execfileNum;
 };
 
 #endif //USERKERNEL_H
