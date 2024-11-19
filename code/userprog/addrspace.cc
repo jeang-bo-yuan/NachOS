@@ -57,17 +57,8 @@ SwapHeader (NoffHeader *noffH)
 
 AddrSpace::AddrSpace()
 {
-    pageTable = new TranslationEntry[NumPhysPages];
-    for (unsigned int i = 0; i < NumPhysPages; i++) {
-	pageTable[i].virtualPage = i;	// for now, virt page # = phys page #
-	pageTable[i].physicalPage = i;
-//	pageTable[i].physicalPage = 0;
-	pageTable[i].valid = TRUE;
-//	pageTable[i].valid = FALSE;
-	pageTable[i].use = FALSE;
-	pageTable[i].dirty = FALSE;
-	pageTable[i].readOnly = FALSE;  
-    }
+    pageTable = nullptr;
+    numPages = 0;
     
     // zero out the entire address space
 //    bzero(kernel->machine->mainMemory, MemorySize);
@@ -122,24 +113,33 @@ AddrSpace::Load(char *fileName)
     size = numPages * PageSize;
 
     numPages = divRoundUp(size,PageSize);
+    delete pageTable; // prevent memory leak, if someone loads the file twice
+    pageTable = new TranslationEntry[numPages];
+
     for(unsigned int i=0, j=0; i<numPages; i++){
         pageTable[i].virtualPage = i;
         while(j<NumPhysPages && AddrSpace::usedPhyPage[j] == true)
             j++;
-        AddrSpace::usedPhyPage[j] = true;
-        pageTable[i].physicalPage = j;
-        pageTable[i].valid = true;
+
+        // there is an empty physical page
+        if (j < NumPhysPages) {
+            AddrSpace::usedPhyPage[j] = true;
+            pageTable[i].physicalPage = j;
+            pageTable[i].valid = true;
+        }
+        // no empty physical page
+        else {
+            pageTable[i].physicalPage = 0;
+            // Invalid, PageFault will occur when reading or writing
+            pageTable[i].valid = false;
+        }
+        
         pageTable[i].use = false;
         pageTable[i].dirty = false;
         pageTable[i].readOnly = false;
     }
 
     size = numPages * PageSize;
-
-    ASSERT(numPages <= NumPhysPages);		// check we're not trying
-						// to run anything too big --
-						// at least until we have
-						// virtual memory
 
     DEBUG(dbgAddr, "Initializing address space: " << numPages << ", " << size);
 
