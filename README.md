@@ -1,3 +1,7 @@
+# 這branch是做什麼的?
+
+我把hw1和hw2的內容都合併成同一個分支
+
 # NachOS 4.0
 
 **Now Compatible with 64-bit Linux Machines**
