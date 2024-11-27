@@ -31,6 +31,28 @@
 
 bool AddrSpace::usedPhyPage[NumPhysPages] = {0};
 
+bool AddrSpace::IsPhyPageUsed(size_t index)
+{
+    ASSERT(0 <= index && index < NumPhysPages);
+    return usedPhyPage[index];
+}
+
+void AddrSpace::UseFreePhyPage(size_t phyPage, TranslationEntry *entry)
+{
+    ASSERT(!AddrSpace::IsPhyPageUsed(phyPage));
+
+    // mark as used
+    AddrSpace::usedPhyPage[phyPage] = true;
+
+    // edit entry
+    entry->physicalPage = phyPage;
+    entry->valid = true;
+
+    // TODO: Add entry into "page list"
+    // TODO: Swap in entry if needed
+}
+
+
 static void 
 SwapHeader (NoffHeader *noffH)
 {
@@ -118,14 +140,12 @@ AddrSpace::Load(char *fileName)
 
     for(unsigned int i=0, j=0; i<numPages; i++){
         pageTable[i].virtualPage = i;
-        while(j<NumPhysPages && AddrSpace::usedPhyPage[j] == true)
+        while(j<NumPhysPages && AddrSpace::IsPhyPageUsed(j))
             j++;
 
         // there is an empty physical page
         if (j < NumPhysPages) {
-            AddrSpace::usedPhyPage[j] = true;
-            pageTable[i].physicalPage = j;
-            pageTable[i].valid = true;
+            AddrSpace::UseFreePhyPage(j, pageTable + i);
         }
         // no empty physical page
         else {

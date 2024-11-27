@@ -24,7 +24,13 @@ class AddrSpace {
     AddrSpace();			// Create an address space.
     ~AddrSpace();			// De-allocate an address space
 
-    static bool usedPhyPage[NumPhysPages];
+    /// 檢查第 index 個 physical page 是否被使用
+    /// Pre: `0 <= index && index < NumPhysPages`
+    static bool IsPhyPageUsed(size_t index);
+
+    /// 讓 entry 代表的 virtual page 使用第 index 個 physical page
+    /// Pre: `!IsPhyPageUsed(phyPage)`
+    static void UseFreePhyPage(size_t phyPage, TranslationEntry* entry);
 
     void Execute(char *fileName);	// Run the the program
 					// stored in the file "executable"
@@ -33,10 +39,13 @@ class AddrSpace {
     void RestoreState();		// info on a context switch 
 
   private:
-    TranslationEntry *pageTable;	// Assume linear page table translation
-					// for now!
-    unsigned int numPages;		// Number of pages in the virtual 
-					// address space
+    /// record which physical pages are used
+    static bool usedPhyPage[NumPhysPages];
+
+    /// Assume linear page table translation for now!
+    TranslationEntry *pageTable;
+    /// Number of pages in the virtual address space
+    unsigned int numPages;
 
     bool Load(char *fileName);		// Load the program into memory
 					// return false if not found
