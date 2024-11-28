@@ -68,6 +68,7 @@ void AddrSpace::UseFreePhyPage(size_t phyPage, TranslationEntry *entry)
     else
         ASSERTNOTREACHED();
     // TODO: Swap in entry if needed
+    entry->SwapIn();
 }
 
 static void 

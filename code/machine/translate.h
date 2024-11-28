@@ -20,6 +20,10 @@
 
 #include "copyright.h"
 #include "utility.h"
+#include <bitset>
+#include <memory>
+
+class SynchDisk;
 
 // The following class defines an entry in a translation table -- either
 // in a page table or a TLB.  Each entry defines a mapping from one 
@@ -29,6 +33,15 @@
 
 class TranslationEntry {
   public:
+    TranslationEntry();
+    ~TranslationEntry();
+
+    // from SwapSpace to MainMemory
+    void SwapIn();
+
+    // from MainMemory to SwapSpace
+    void SwapOut();
+
     unsigned int virtualPage;  	// The page number in virtual memory.
     unsigned int physicalPage;  // The page number in real memory (relative to the
 			//  start of "mainMemory"
@@ -40,6 +53,19 @@ class TranslationEntry {
 			// page is referenced or modified.
     bool dirty;         // This bit is set by the hardware every time the
 			// page is modified.
+
+  private:
+    /// @brief swap out時會將記憶體的內容暫存到哪個sector
+    unsigned m_sector_number;
+    /// @brief 之前有沒有swap out過，有的話swap in才會做事（避免硬碟中的亂碼被swap in）
+    bool m_has_swapped_out_before;
+
+    /// @brief 記錄sector是否被使用
+    static std::bitset<1024> _IsSectorUsed;
+    /// @brief It may be empty
+    static unsigned _EmptySector;
+    /// @brief 置換空間
+    static std::shared_ptr<SynchDisk> _SwapSpace;
 };
 
 #endif
