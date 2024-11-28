@@ -47,6 +47,8 @@ void AddrSpace::UseFreePhyPage(size_t phyPage, TranslationEntry *entry)
     // edit entry
     entry->physicalPage = phyPage;
     entry->valid = true;
+    entry->use = false;
+    entry->dirty = false;
 
     // TODO: Add entry into "page list"
     // TODO: Swap in entry if needed

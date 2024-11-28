@@ -30,6 +30,7 @@ class AddrSpace {
 
     /// 讓 entry 代表的 virtual page 使用第 index 個 physical page
     /// Pre: `!IsPhyPageUsed(phyPage)`
+    /// Post: valid == true, use == false, dirty == false
     static void UseFreePhyPage(size_t phyPage, TranslationEntry* entry);
 
     void Execute(char *fileName);	// Run the the program
