@@ -52,6 +52,7 @@ void AddrSpace::UseFreePhyPage(size_t phyPage, TranslationEntry *entry)
 
     // TODO: Add entry into "page list"
     // TODO: Swap in entry if needed
+    entry->SwapIn();
 }
 
 

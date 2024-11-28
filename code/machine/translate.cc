@@ -32,6 +32,78 @@
 #include "copyright.h"
 #include "main.h"
 
+// Class TranslationEntry //////////////////////////////////////////////////
+
+// static member definition
+static_assert(NumSectors == 1024, "");
+std::bitset<NumSectors> TranslationEntry::_IsSectorUsed;
+unsigned TranslationEntry::_EmptySector = 0;
+std::shared_ptr<SynchDisk> TranslationEntry::_SwapSpace;
+
+TranslationEntry::TranslationEntry() 
+    : virtualPage(-1), physicalPage(-1), valid(false), readOnly(false), use(false), dirty(false), m_has_swapped_out_before(false)
+{
+    if (_SwapSpace == nullptr) {
+        char name[] = "SwapSpaceDisk";
+        _SwapSpace = std::make_shared<SynchDisk>(name);
+    }
+
+    unsigned num = _EmptySector;
+
+    for (unsigned i = 0; i < NumSectors; ++i) {
+        if (_IsSectorUsed.test(num)) {
+            // 已經被佔用，換下一個
+            num = (num + 1) % NumSectors;
+        }
+        else {
+            // 還沒被佔用，使用它
+            this->m_sector_number = num;
+            DEBUG(dbgAddr, "Allocate Sector " << num << " for TranslationEntry");
+            _IsSectorUsed.set(num, true);
+            _EmptySector = (num + 1) % NumSectors;
+            return;
+        }
+    }
+
+    ASSERTNOTREACHED();
+}
+
+TranslationEntry::~TranslationEntry()
+{
+    // 釋放佔用的sector
+    _IsSectorUsed.set(m_sector_number, false);
+}
+
+void TranslationEntry::SwapIn()
+{
+    ASSERT(valid && 0 <= physicalPage && physicalPage < NumPhysPages);
+
+    if (!m_has_swapped_out_before)
+        return;
+
+    cout << "Swap in physical page: " << physicalPage << endl;
+
+    const unsigned phys_offset = this->physicalPage * PageSize;
+    // 讀取sector並寫入mainMemory
+    _SwapSpace->ReadSector(this->m_sector_number, 
+                          kernel->machine->mainMemory + phys_offset);
+}
+
+void TranslationEntry::SwapOut()
+{
+    cout << "Swap out physical page: " << physicalPage << endl;
+    ASSERT(valid && 0 <= physicalPage && physicalPage < NumPhysPages);
+
+    const unsigned phys_offset = this->physicalPage * PageSize;
+    // mainMemory的內容寫入sector
+    _SwapSpace->WriteSector(this->m_sector_number, 
+                          kernel->machine->mainMemory + phys_offset);
+
+    m_has_swapped_out_before = true;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 // Routines for converting Words and Short Words to and from the
 // simulated machine's format of little endian.  These end up
 // being NOPs when the host machine is also little endian (DEC and Intel).
