@@ -37,6 +37,18 @@ bool AddrSpace::IsPhyPageUsed(size_t index)
     return usedPhyPage[index];
 }
 
+unsigned int AddrSpace::SwapOutLastPage()
+{
+    TranslationEntry* curPage = pageList.back();
+
+    curPage>swapOut();
+    curPage->valid = false;
+    usedPhyPage[curPage->physicalPage] = false;
+    pageList.pop_back();
+    
+    return curPage->physicalPage;
+}
+
 void AddrSpace::UseFreePhyPage(size_t phyPage, TranslationEntry *entry)
 {
     ASSERT(!AddrSpace::IsPhyPageUsed(phyPage));
@@ -51,9 +63,12 @@ void AddrSpace::UseFreePhyPage(size_t phyPage, TranslationEntry *entry)
     entry->dirty = false;
 
     // TODO: Add entry into "page list"
+    if(pageList.size() <= NumPhysPages)
+        pageList.push_front(entry);
+    else
+        ASSERTNOTREACHED();
     // TODO: Swap in entry if needed
 }
-
 
 static void 
 SwapHeader (NoffHeader *noffH)

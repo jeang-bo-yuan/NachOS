@@ -181,6 +181,7 @@ Machine::WriteMem(int addr, int size, int value)
 // 	"writing" -- if TRUE, check the "read-only" bit in the TLB
 //----------------------------------------------------------------------
 
+extern TranslationEntry* Page_Fault_Entry;
 ExceptionType
 Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 {
@@ -213,6 +214,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
         } else if (!pageTable[vpn].valid) {
                 /* 		Add Page fault code here		*/
                 cerr << "page fault occurs !!!!\n";
+                Page_Fault_Entry = &pageTable[vpn];
                 return PageFaultException;
         }
         entry = &pageTable[vpn];

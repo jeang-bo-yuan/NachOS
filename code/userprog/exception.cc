@@ -48,6 +48,8 @@
 //	are in machine.h.
 //----------------------------------------------------------------------
 
+
+TranslationEntry* Page_Fault_Entry;
 void
 ExceptionHandler(ExceptionType which)
 {
@@ -85,7 +87,18 @@ ExceptionHandler(ExceptionType which)
 	    }
 	    break;
 	case PageFaultException:
-		/*    Page Fault Exception    */
+		for(int i = 0; i < NumPhysPages; ++i)
+		{
+			if(!AddrSpace::IsPhyPageUsed(i))
+			{
+				AddrSpace::UseFreePhyPage(i, Page_Fault_Entry);
+				return;
+			}
+		}
+
+		unsigned int freePage = AddrSpace::SwapOutLastPage();
+		AddrSpace::UseFreePhyPage(freePage, Page_Fault_Entry);
+
 	    break;
 	default:
 	    cerr << "Unexpected user mode exception" << which << "\n";

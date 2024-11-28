@@ -16,6 +16,7 @@
 #include "copyright.h"
 #include "filesys.h"
 #include <string.h>
+#include <list>
 
 #define UserStackSize		1024 	// increase this as necessary!
 
@@ -33,6 +34,8 @@ class AddrSpace {
     /// Post: valid == true, use == false, dirty == false
     static void UseFreePhyPage(size_t phyPage, TranslationEntry* entry);
 
+    static unsigned int SwapOutLastPage();
+
     void Execute(char *fileName);	// Run the the program
 					// stored in the file "executable"
 
@@ -42,6 +45,9 @@ class AddrSpace {
   private:
     /// record which physical pages are used
     static bool usedPhyPage[NumPhysPages];
+
+    // record which pages are in the memory
+    static std::list<TranslationEntry*> pageList;
 
     /// Assume linear page table translation for now!
     TranslationEntry *pageTable;

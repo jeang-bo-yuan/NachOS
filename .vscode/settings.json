@@ -10,5 +10,8 @@
         "x86",
         "LINUX",
         "BSD"
-    ]
+    ],
+    "files.associations": {
+        "iostream": "cpp"
+    }
 }
