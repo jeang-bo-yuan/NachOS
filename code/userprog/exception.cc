@@ -95,11 +95,11 @@ ExceptionHandler(ExceptionType which)
 				return;
 			}
 		}
-
-		unsigned int freePage = AddrSpace::SwapOutLastPage();
-		AddrSpace::UseFreePhyPage(freePage, Page_Fault_Entry);
-
-	    break;
+		{
+			unsigned int freePage = AddrSpace::SwapOutLastPage();
+			AddrSpace::UseFreePhyPage(freePage, Page_Fault_Entry);
+		}
+		return;
 	default:
 	    cerr << "Unexpected user mode exception" << which << "\n";
 	    break;

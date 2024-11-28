@@ -30,6 +30,7 @@
 
 
 bool AddrSpace::usedPhyPage[NumPhysPages] = {0};
+std::list<TranslationEntry*> AddrSpace::pageList;
 
 bool AddrSpace::IsPhyPageUsed(size_t index)
 {
@@ -41,7 +42,7 @@ unsigned int AddrSpace::SwapOutLastPage()
 {
     TranslationEntry* curPage = pageList.back();
 
-    curPage>swapOut();
+    curPage->SwapOut();
     curPage->valid = false;
     usedPhyPage[curPage->physicalPage] = false;
     pageList.pop_back();
