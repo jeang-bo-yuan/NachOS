@@ -53,6 +53,7 @@ unsigned int AddrSpace::SwapOutLastPage()
 void AddrSpace::UseFreePhyPage(size_t phyPage, TranslationEntry *entry)
 {
     ASSERT(!AddrSpace::IsPhyPageUsed(phyPage));
+    ASSERT(pageList.size() < NumPhysPages);
 
     // mark as used
     AddrSpace::usedPhyPage[phyPage] = true;
@@ -64,10 +65,7 @@ void AddrSpace::UseFreePhyPage(size_t phyPage, TranslationEntry *entry)
     entry->dirty = false;
 
     // TODO: Add entry into "page list"
-    if(pageList.size() <= NumPhysPages)
-        pageList.push_front(entry);
-    else
-        ASSERTNOTREACHED();
+    pageList.push_front(entry);
     // TODO: Swap in entry if needed
     entry->SwapIn();
 }
