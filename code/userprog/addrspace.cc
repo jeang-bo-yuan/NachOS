@@ -41,11 +41,17 @@ bool AddrSpace::IsPhyPageUsed(size_t index)
 unsigned int AddrSpace::SwapOutLastPage()
 {
     TranslationEntry* curPage = pageList.back();
+    /**
+     * pop_back放在這裡是必要的，因為在SwapOut時，NachOS會讓目前的執行緒（下稱A）休息直到硬碟的寫入完成
+     * 在休息的期間可能會切換到其他的執行緒（下稱B）
+     * 若B也發生page fault，那B看到的pageList.back()必須和A看到的不一樣，不然同個physical page會被swap out兩次
+     */
+    pageList.pop_back();
 
     curPage->SwapOut();
     curPage->valid = false;
+    // 在swap out完成前必須持續佔用curPage->physicalPage，避免其他thread想要佔用它
     usedPhyPage[curPage->physicalPage] = false;
-    pageList.pop_back();
     
     return curPage->physicalPage;
 }
