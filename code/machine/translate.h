@@ -42,6 +42,9 @@ class TranslationEntry {
     // from MainMemory to SwapSpace
     void SwapOut();
 
+    // LRU implement
+    static void LRU_Algo(TranslationEntry* entry);
+
     unsigned int virtualPage;  	// The page number in virtual memory.
     unsigned int physicalPage;  // The page number in real memory (relative to the
 			//  start of "mainMemory"

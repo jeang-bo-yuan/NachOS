@@ -50,6 +50,11 @@ unsigned int AddrSpace::SwapOutLastPage()
     return curPage->physicalPage;
 }
 
+std::list<TranslationEntry*>* AddrSpace::getPageList()
+{
+    return &pageList;
+}
+
 void AddrSpace::UseFreePhyPage(size_t phyPage, TranslationEntry *entry)
 {
     ASSERT(!AddrSpace::IsPhyPageUsed(phyPage));

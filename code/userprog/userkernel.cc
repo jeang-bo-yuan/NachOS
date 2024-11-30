@@ -17,6 +17,8 @@
 //	for the initialization (see also comments in main.cc)  
 //----------------------------------------------------------------------
 
+extern string algoType = "";
+
 UserProgKernel::UserProgKernel(int argc, char **argv) 
 		: ThreadedKernel(argc, argv)
 {
@@ -42,6 +44,10 @@ UserProgKernel::UserProgKernel(int argc, char **argv)
 			cout << "For example:" << endl;
 			cout << "	./nachos -s : Print machine status during the machine is on." << endl;
 			cout << "	./nachos -e file1 -e file2 : executing file1 and file2."  << endl;
+		}
+		else if(strcmp(argv[i], "LRU") == 0)
+		{
+			algoType = "LRU";
 		}
     }
 }
