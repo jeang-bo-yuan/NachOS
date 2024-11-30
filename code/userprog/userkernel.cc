@@ -17,7 +17,7 @@
 //	for the initialization (see also comments in main.cc)  
 //----------------------------------------------------------------------
 
-extern string algoType = "";
+extern string algoType;
 
 UserProgKernel::UserProgKernel(int argc, char **argv) 
 		: ThreadedKernel(argc, argv)

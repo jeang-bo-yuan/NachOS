@@ -263,16 +263,8 @@ Machine::WriteMem(int addr, int size, int value)
 // 	"writing" -- if TRUE, check the "read-only" bit in the TLB
 //----------------------------------------------------------------------
 
-
-void TranslationEntry::LRU_Algo(TranslationEntry* entry)
-{
-    std::list<TranslationEntry*> *pageList = AddrSpace::getPageList();
-    pageList->remove(entry);
-    pageList->push_front(entry);
-}
-
 extern TranslationEntry* Page_Fault_Entry;
-string algoType;
+string algoType = "";
 
 ExceptionType
 Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
@@ -312,7 +304,8 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
         entry = &pageTable[vpn];
 
         if (algoType == "LRU")
-            TranslationEntry::LRU_Algo(entry);
+            AddrSpace::LRU_Algo(entry);
+
     } else {
         for (entry = NULL, i = 0; i < TLBSize; i++)
     	    if (tlb[i].valid && (tlb[i].virtualPage == vpn)) {

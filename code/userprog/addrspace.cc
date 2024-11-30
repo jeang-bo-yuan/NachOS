@@ -94,9 +94,11 @@ unsigned int AddrSpace::SwapOutLastPage()
     return curPage->physicalPage;
 }
 
-std::list<TranslationEntry*>* AddrSpace::getPageList()
+
+void AddrSpace::LRU_Algo(TranslationEntry* entry)
 {
-    return &pageList;
+    pageList.remove(entry);
+    pageList.push_front(entry);
 }
 
 void AddrSpace::UseFreePhyPage(size_t phyPage, TranslationEntry *entry)

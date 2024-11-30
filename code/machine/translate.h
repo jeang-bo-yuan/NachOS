@@ -42,8 +42,6 @@ class TranslationEntry {
     // from MainMemory to SwapSpace
     void SwapOut();
 
-    // LRU implement
-    static void LRU_Algo(TranslationEntry* entry);
     // from data to SwapSpace
     void SwapOutData(char* data);
 
