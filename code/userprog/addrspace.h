@@ -19,6 +19,7 @@
 #include <list>
 
 #define UserStackSize		1024 	// increase this as necessary!
+struct noffHeader;
 
 class AddrSpace {
   public:
@@ -60,6 +61,8 @@ class AddrSpace {
     void InitRegisters();		// Initialize user-level CPU registers,
 					// before jumping to user code
 
+    /// Copy the code and data segments into memory or disk
+    void InitPages(OpenFile* executable, const noffHeader& noffH);
 };
 
 #endif // ADDRSPACE_H

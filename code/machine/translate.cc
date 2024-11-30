@@ -105,6 +105,13 @@ void TranslationEntry::SwapOut()
     m_has_swapped_out_before = true;
 }
 
+void TranslationEntry::SwapOutData(char *data)
+{
+    DEBUG(dbgMy, "TranslationEntry::SwapOutData()");
+    _SwapSpace->WriteSector(this->m_sector_number, data);
+    m_has_swapped_out_before = true;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 // Routines for converting Words and Short Words to and from the

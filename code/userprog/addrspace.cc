@@ -21,13 +21,51 @@
 #include "machine.h"
 #include "noff.h"
 
-//----------------------------------------------------------------------
-// SwapHeader
-// 	Do little endian to big endian conversion on the bytes in the 
-//	object file header, in case the file was generated on a little
-//	endian machine, and we're now running on a big endian machine.
-//----------------------------------------------------------------------
+namespace {
+/**
+ * 這個類別是一個Noff（Nachos Object Code Format）的讀取器
+ * 它的用途是從object file中讀取特定Segment
+ * 
+ * 該讀取器會依序讀取virtual address [0, PageSize)、[PageSize, 2 * PageSize)...的內容
+ * 若讀取範圍和被分配到的Segment有重疊，則會從檔案讀取並寫入outData
+ */
+class NoffReader {
+    OpenFile* const FILE;
+    const char* name;
+    int virtualAddr;		/* location of segment in virt addr space */
+    int inFileAddr;		/* location of segment in this file */
+    int size;			/* size of segment */
 
+    public:
+    NoffReader(OpenFile* file, Segment S, const char* name)
+        : FILE(file), name(name), virtualAddr(S.virtualAddr), inFileAddr(S.inFileAddr), size(S.size)
+    {}
+
+    /// 讀出一個Page，如果讀取範圍和分配到的Segment重疊，則讀取並回傳true。否則回傳false。
+    bool ReadOnePage(char* outData) {
+        // read nothing
+        if (virtualAddr < 0 || virtualAddr >= (int)PageSize || size <= 0) {
+            virtualAddr -= PageSize;
+            return false;
+        }
+
+        const int size_to_read = min<int>(PageSize - virtualAddr, size);
+        DEBUG(dbgMy, "Read " << size_to_read << " bytes from inFileAddr: " << inFileAddr << " (Segment: " << name << ")");
+        FILE->ReadAt(outData, size_to_read, inFileAddr);
+
+        // update
+        // 下次讀取時，直接寫在outData的最前方（因為Segment是連續的，如果跨多個Page，則在橫跨的第2個page中一定是從頭開始寫）
+        virtualAddr = 0;
+        size -= size_to_read;
+        inFileAddr += size_to_read;
+
+        return true;
+    }
+};
+}
+
+
+// Static Member of AddrSpace ///////////////////////////////////////////////////////////////////////
 
 bool AddrSpace::usedPhyPage[NumPhysPages] = {0};
 std::list<TranslationEntry*> AddrSpace::pageList;
@@ -75,6 +113,13 @@ void AddrSpace::UseFreePhyPage(size_t phyPage, TranslationEntry *entry)
     // TODO: Swap in entry if needed
     entry->SwapIn();
 }
+
+//----------------------------------------------------------------------
+// SwapHeader
+// 	Do little endian to big endian conversion on the bytes in the 
+//	object file header, in case the file was generated on a little
+//	endian machine, and we're now running on a big endian machine.
+//----------------------------------------------------------------------
 
 static void 
 SwapHeader (NoffHeader *noffH)
@@ -161,6 +206,10 @@ AddrSpace::Load(char *fileName)
     delete pageTable; // prevent memory leak, if someone loads the file twice
     pageTable = new TranslationEntry[numPages];
 
+    // 將pageTable和numPages傳給kernel->machine，避免它會用到
+    kernel->machine->pageTable = this->pageTable;
+    kernel->machine->pageTableSize = this->numPages;
+
     for(unsigned int i=0, j=0; i<numPages; i++){
         pageTable[i].virtualPage = i;
         while(j<NumPhysPages && AddrSpace::IsPhyPageUsed(j))
@@ -182,28 +231,42 @@ AddrSpace::Load(char *fileName)
         pageTable[i].readOnly = false;
     }
 
-    size = numPages * PageSize;
-
-    DEBUG(dbgAddr, "Initializing address space: " << numPages << ", " << size);
-
-// then, copy in the code and data segments into memory
-	if (noffH.code.size > 0) {
-        DEBUG(dbgAddr, "Initializing code segment.");
-	DEBUG(dbgAddr, noffH.code.virtualAddr << ", " << noffH.code.size);
-        	executable->ReadAt(
-		&(kernel->machine->mainMemory[pageTable[noffH.code.virtualAddr/PageSize].physicalPage * PageSize + (noffH.code.virtualAddr%PageSize)]), 
-			noffH.code.size, noffH.code.inFileAddr);
-    }
-	if (noffH.initData.size > 0) {
-        DEBUG(dbgAddr, "Initializing data segment.");
-	DEBUG(dbgAddr, noffH.initData.virtualAddr << ", " << noffH.initData.size);
-        executable->ReadAt(
-		&(kernel->machine->mainMemory[pageTable[noffH.initData.virtualAddr/PageSize].physicalPage * PageSize + (noffH.code.virtualAddr%PageSize)]),
-			noffH.initData.size, noffH.initData.inFileAddr);
-    }
+    this->InitPages(executable, noffH);
 
     delete executable;			// close file
     return TRUE;			// success
+}
+
+void AddrSpace::InitPages(OpenFile* executable, const noffHeader& noffH) {
+    DEBUG(dbgMy, "Initializing address space: " << numPages << ", " << numPages * PageSize);
+    DEBUG(dbgMy, "Initializing code segment: " << noffH.code.virtualAddr << ", " << noffH.code.size << ", " << noffH.code.inFileAddr);
+    DEBUG(dbgMy, "Initializing data segment: " << noffH.initData.virtualAddr << ", " << noffH.initData.size << ", " << noffH.initData.inFileAddr);
+
+    // 如果沒有對應的physical page，則將內容暫存於此
+    char buffer[PageSize] = { '\0' };
+    char* outData = nullptr;
+    NoffReader code(executable, noffH.code, "code"), initData(executable, noffH.initData, "initData");
+
+    for (unsigned i = 0; i < numPages; i++) {
+        // 有對應的physical page，直接寫入mainMemory
+        if (pageTable[i].valid) {
+            DEBUG(dbgMy, i << " valid");
+            outData = kernel->machine->mainMemory + (pageTable[i].physicalPage * PageSize);
+        }
+        else {
+            DEBUG(dbgMy, i << " invalid");
+            outData = buffer;
+            memset(buffer, 0, PageSize);
+        }
+
+        code.ReadOnePage(outData);
+        initData.ReadOnePage(outData);
+
+        if (!pageTable[i].valid) {
+            pageTable[i].SwapOutData(outData);
+            ASSERT(!pageTable[i].valid);
+        }
+    }
 }
 
 //----------------------------------------------------------------------
