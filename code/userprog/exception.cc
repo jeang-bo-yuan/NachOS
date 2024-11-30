@@ -49,7 +49,8 @@
 //----------------------------------------------------------------------
 
 
-TranslationEntry* Page_Fault_Entry;
+TranslationEntry* Page_Fault_Entry = nullptr;
+
 void
 ExceptionHandler(ExceptionType which)
 {
@@ -87,17 +88,21 @@ ExceptionHandler(ExceptionType which)
 	    }
 	    break;
 	case PageFaultException:
+		ASSERT(Page_Fault_Entry != nullptr);
+
 		for(int i = 0; i < NumPhysPages; ++i)
 		{
 			if(!AddrSpace::IsPhyPageUsed(i))
 			{
 				AddrSpace::UseFreePhyPage(i, Page_Fault_Entry);
+				Page_Fault_Entry = nullptr;
 				return;
 			}
 		}
 		{
 			unsigned int freePage = AddrSpace::SwapOutLastPage();
 			AddrSpace::UseFreePhyPage(freePage, Page_Fault_Entry);
+			Page_Fault_Entry = nullptr;
 		}
 		return;
 	default:

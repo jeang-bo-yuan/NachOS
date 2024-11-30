@@ -44,6 +44,8 @@ class TranslationEntry {
 
     // LRU implement
     static void LRU_Algo(TranslationEntry* entry);
+    // from data to SwapSpace
+    void SwapOutData(char* data);
 
     unsigned int virtualPage;  	// The page number in virtual memory.
     unsigned int physicalPage;  // The page number in real memory (relative to the
@@ -60,7 +62,7 @@ class TranslationEntry {
   private:
     /// @brief swap out時會將記憶體的內容暫存到哪個sector
     unsigned m_sector_number;
-    /// @brief 之前有沒有swap out過，有的話swap in才會做事（避免硬碟中的亂碼被swap in）
+    /// @brief 之前有沒有swap out過。沒有的話，swap in會放入0
     bool m_has_swapped_out_before;
 
     /// @brief 記錄sector是否被使用

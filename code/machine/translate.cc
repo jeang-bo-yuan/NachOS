@@ -58,7 +58,7 @@ TranslationEntry::TranslationEntry()
         else {
             // 還沒被佔用，使用它
             this->m_sector_number = num;
-            DEBUG(dbgAddr, "Allocate Sector " << num << " for TranslationEntry");
+            DEBUG(dbgMy, "Allocate Sector " << num << " for TranslationEntry");
             _IsSectorUsed.set(num, true);
             _EmptySector = (num + 1) % NumSectors;
             return;
@@ -76,16 +76,19 @@ TranslationEntry::~TranslationEntry()
 void TranslationEntry::SwapIn()
 {
     ASSERT(valid && 0 <= physicalPage && physicalPage < NumPhysPages);
-
-    if (!m_has_swapped_out_before)
-        return;
-
-    cout << "Swap in physical page: " << physicalPage << endl;
-
     const unsigned phys_offset = this->physicalPage * PageSize;
-    // 讀取sector並寫入mainMemory
-    _SwapSpace->ReadSector(this->m_sector_number, 
-                          kernel->machine->mainMemory + phys_offset);
+
+    if (!m_has_swapped_out_before) {
+        DEBUG(dbgMy, "SwapIn() - Fill physical page " << physicalPage << " with 0s");
+        memset(kernel->machine->mainMemory + phys_offset, 0, PageSize);
+    }
+    else {
+        DEBUG(dbgMy, "Swap into physical page: " << physicalPage);
+
+        // 讀取sector並寫入mainMemory
+        _SwapSpace->ReadSector(this->m_sector_number, 
+                            kernel->machine->mainMemory + phys_offset);
+    }
 }
 
 
@@ -99,6 +102,13 @@ void TranslationEntry::SwapOut()
     _SwapSpace->WriteSector(this->m_sector_number, 
                           kernel->machine->mainMemory + phys_offset);
 
+    m_has_swapped_out_before = true;
+}
+
+void TranslationEntry::SwapOutData(char *data)
+{
+    DEBUG(dbgMy, "TranslationEntry::SwapOutData()");
+    _SwapSpace->WriteSector(this->m_sector_number, data);
     m_has_swapped_out_before = true;
 }
 
