@@ -89,6 +89,7 @@ ExceptionHandler(ExceptionType which)
 	    break;
 	case PageFaultException:
 		ASSERT(Page_Fault_Entry != nullptr);
+		kernel->stats->numPageFaults++;
 
 		for(int i = 0; i < NumPhysPages; ++i)
 		{

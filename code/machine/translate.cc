@@ -297,7 +297,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
             return AddressErrorException;
         } else if (!pageTable[vpn].valid) {
                 /* 		Add Page fault code here		*/
-                cerr << "page fault occurs !!!!\n";
+                cout << "page fault occurs !!!!" << endl;
                 Page_Fault_Entry = &pageTable[vpn];
                 return PageFaultException;
         }
